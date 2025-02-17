@@ -36,9 +36,9 @@
 
     #countdown {
       font-family: 'Orbitron', sans-serif;
-      font-size: 10em; /* Smaller size for mobile */
-      margin: 20px 0;
-      color: #ffffff; /* Neon blue */
+      font-size: 8em; /* Larger font size for countdown */
+      margin: 10px 0;
+      color: #00c6ff; /* Neon blue */
       font-weight: bold;
       text-shadow: 0 0 10px #00c6ff; /* Neon blue glow */
       width: 100%; /* Full width for mobile */
@@ -102,6 +102,32 @@
       color: #fff;
       border: 4px solid #00c6ff; /* Increased border size */
       box-shadow: 0 0 20px rgba(0, 198, 255, 0.3); /* Neon blue shadow */
+    }
+
+    .celebration-content {
+      background: linear-gradient(45deg, #00c6ff, #00ff88) !important;
+      border-color: #ffffff !important;
+      animation: celebrate 0.5s ease-in-out infinite;
+    }
+
+    .celebration-content h2 {
+      font-family: 'Pacifico', cursive;
+      font-size: 2.5em;
+      margin: 0 0 15px 0;
+      color: #ffffff;
+      text-shadow: 0 0 10px rgba(0,0,0,0.3);
+    }
+
+    .celebration-content p {
+      font-size: 1.5em;
+      margin: 10px 0;
+    }
+
+    .celebration-content button {
+      background: linear-gradient(45deg, #ffffff, #f0f0f0);
+      color: #003366;
+      margin-top: 20px;
+      font-weight: bold;
     }
 
     .close {
@@ -178,9 +204,11 @@
 
     /* Celebration animation */
     @keyframes celebrate {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.2); }
-      100% { transform: scale(1); }
+      0% { transform: scale(1) rotate(0deg); }
+      25% { transform: scale(1.05) rotate(2deg); }
+      50% { transform: scale(1.1) rotate(-2deg); }
+      75% { transform: scale(1.05) rotate(2deg); }
+      100% { transform: scale(1) rotate(0deg); }
     }
   </style>
 </head>
@@ -219,8 +247,9 @@
   <div id="settings-modal" class="modal">
     <div class="modal-content">
       <span class="close">&times;</span>
-      <h2>Set Work Timing</h2>
+      <h3>Set Work Timing</h3>
       <form id="settings-form">
+        <button type="submit">Save</button>
         <label for="start-time">Start Time:</label>
         <input type="time" id="start-time" value="08:00" required>
         <label for="end-time">End Time:</label>
@@ -235,8 +264,16 @@
         <input type="text" id="timezone" placeholder="Enter your timezone (e.g., UTC)" required>
         <label for="api-key">OpenWeatherMap API Key:</label>
         <input type="text" id="api-key" placeholder="Enter your API key" required>
-        <button type="submit">Save</button>
       </form>
+    </div>
+  </div>
+
+  <!-- Celebration Modal -->
+  <div id="celebration-modal" class="modal">
+    <div class="modal-content celebration-content">
+      <h2>Workday Over!<br>🎉🎉</h2>
+      <p>Time to relax and enjoy your free time!</p>
+      <button onclick="closeCelebration()">Close</button>
     </div>
   </div>
 
@@ -250,6 +287,7 @@
       const settingsForm = document.getElementById('settings-form');
       const weatherInfo = document.getElementById('weather-info');
       const weatherError = document.getElementById('weather-error');
+      const celebrationModal = document.getElementById('celebration-modal');
 
       let workStart = 8; // Default start time (8 AM)
       let workEnd = 17; // Default end time (5 PM)
@@ -258,6 +296,7 @@
       let city = localStorage.getItem('city') || 'Al Wakrah'; // Default city
       let timezone = localStorage.getItem('timezone') || 'UTC'; // Default timezone
       let apiKey = localStorage.getItem('apiKey') || '201f409d2c13e2adda1af82e40088434'; // Default API key
+      let celebrationShown = false;
 
       // Load saved settings from localStorage
       const savedStartTime = localStorage.getItem('startTime');
@@ -347,13 +386,15 @@
 
         let diff = end - now;
         if (diff < 0) {
-          // Workday is over, display a dynamic message with animation
-          timeDisplay.textContent = "Workday is over! Enjoy your free time! 🎉";
-          timeDisplay.style.animation = 'celebrate 1s ease-in-out infinite';
+          timeDisplay.textContent = "00:00:00";
+          if (!celebrationShown) {
+            celebrationModal.style.display = 'block';
+            celebrationShown = true;
+          }
           return;
         } else {
-          // Reset animation if workday is still in progress
-          timeDisplay.style.animation = 'none';
+          celebrationShown = false;
+          celebrationModal.style.display = 'none';
         }
 
         const hours = Math.floor(diff / (1000 * 60 * 60));
@@ -361,8 +402,8 @@
         const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
         // Display time with colons, ensuring hours have two digits
-  timeDisplay.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-}
+        timeDisplay.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      }
 
       async function fetchWeather() {
         weatherError.style.display = 'none';
@@ -390,6 +431,10 @@
         }
       }
     });
+
+    function closeCelebration() {
+      document.getElementById('celebration-modal').style.display = 'none';
+    }
   </script>
 </body>
 </html>
